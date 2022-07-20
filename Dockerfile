@@ -20,8 +20,6 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 ENV PATH=$CONDA_DIR/bin:$PATH
 
 RUN conda create -n pysatell python=3.8.12
-RUN conda init bash
-#RUN conda activate pysatell
 RUN conda install -n pysatell --file requirements
 #RUN pip install -r requirements
 
