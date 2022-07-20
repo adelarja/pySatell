@@ -21,6 +21,4 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 
 RUN conda create -n pysatell python=3.8.12
 RUN conda install -n pysatell --file requirements
-#RUN pip install -r requirements
-
 
