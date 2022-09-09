@@ -34,7 +34,7 @@ def get_shapefiles_generator(directory: Path) -> Generator[Path, None, None]:
     try:
         first = next(shapefiles)
     except StopIteration:
-        raise(ShapeFileNotFoundException)
+        raise ShapefileNotFoundException
 
     return itertools.chain([first], shapefiles)
 
@@ -52,4 +52,3 @@ def generate_geojsons(directory: Path) -> None:
 
     for shapefile in shapefiles:
         shape_to_geojson(shapefile)
-
