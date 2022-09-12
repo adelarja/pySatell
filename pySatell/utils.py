@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Generator, OrderedDict, Tuple
+from typing import Generator, Dict, Tuple
 from datetime import datetime
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 from datetime import date
@@ -65,7 +65,7 @@ def get_products_by_date_and_area(
         geojson_path: Path,
         platform_name: str,
         cloud_coverage_percentage: Tuple = (0, 100)
-) -> OrderedDict:
+) -> Dict[str, dict]:
     """Gets the available products for a specific date and specifics coordinates.
 
     Args:
@@ -88,7 +88,7 @@ def get_products_by_date_and_area(
         An OrderedDict with information of all the available products for the desired
             date and area.
     """
-    api = SentinelAPI(config.API_USER, config.API_PASSWORD, 'https://apihub.copernicus.eu/apihub')
+    api = SentinelAPI(config.API_USER, config.API_PASSWORD, config.API_URL)
 
     footprint = geojson_to_wkt(read_geojson(geojson_path))
     products = api.query(
