@@ -60,7 +60,8 @@ def generate_geojsons(directory: Path) -> None:
 
 
 def get_products_by_date_and_area(
-        date_: datetime,
+        date_from: datetime,
+        date_to: datetime,
         geojson_path: Path,
         platform_name: str,
         cloud_coverage_percentage: Tuple = (0, 100)
@@ -68,8 +69,11 @@ def get_products_by_date_and_area(
     """Gets the available products for a specific date and specifics coordinates.
 
     Args:
-        date_ (datetime): Datetime object of the date whose information wants to
-            be retrieved.
+        date_from (datetime): Starting date for the time window whose information
+            wants to be retrieved.
+
+        date_to (datetime): End date for the time window whose information
+            wants to be retrieved.
 
         geojson_path (Path): A path object of a geojson file with information about
             the coordinates of the desired area.
@@ -89,7 +93,7 @@ def get_products_by_date_and_area(
     footprint = geojson_to_wkt(read_geojson(geojson_path))
     products = api.query(
         footprint,
-        date=(datetime.strftime(date_, "%Y%m%d"), date_.date()),
+        date=(datetime.strftime(date_from, "%Y%m%d"), date_to.date()),
         platformname=platform_name,
         cloudcoverpercentage=cloud_coverage_percentage
     )
