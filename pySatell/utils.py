@@ -1,5 +1,10 @@
 from pathlib import Path
-from typing import Generator
+from typing import Generator, OrderedDict, Tuple
+from datetime import datetime
+from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
+from datetime import date
+from data import config
+
 import geopandas
 import itertools
 
@@ -52,3 +57,42 @@ def generate_geojsons(directory: Path) -> None:
 
     for shapefile in shapefiles:
         shape_to_geojson(shapefile)
+
+
+def get_products_by_date_and_area(
+        date_: datetime,
+        geojson_path: Path,
+        platform_name: str,
+        cloud_coverage_percentage: Tuple = (0, 100)
+) -> OrderedDict:
+    """Gets the available products for a specific date and specifics coordinates.
+
+    Args:
+        date_ (datetime): Datetime object of the date whose information wants to
+            be retrieved.
+
+        geojson_path (Path): A path object of a geojson file with information about
+            the coordinates of the desired area.
+
+        platform_name (str): The name of the satellite that obtain the images. For example,
+            if we want to obtain optical images, we could pass 'Sentinel-2' as platform_name.
+
+        cloud_coverage_percentage (Tuple): Percentage of cloud coverage of S2 products for
+            each area covered by a reference band. Possible values go from 0 to 100.
+
+    Returns:
+        An OrderedDict with information of all the available products for the desired
+            date and area.
+    """
+    api = SentinelAPI(config.API_USER, config.API_PASSWORD, 'https://apihub.copernicus.eu/apihub')
+
+    footprint = geojson_to_wkt(read_geojson(geojson_path))
+    products = api.query(
+        footprint,
+        date=(datetime.strftime(date_, "%Y%m%d"), date_.date()),
+        platformname=platform_name,
+        cloudcoverpercentage=cloud_coverage_percentage
+    )
+
+    return products
+
