@@ -1,12 +1,16 @@
 from pathlib import Path
-from typing import Generator, Dict, Tuple
+from typing import Generator, Dict, Tuple, List
 from datetime import datetime
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 from datetime import date
 from data import config
+from rasterio import plot
 
 import geopandas
 import itertools
+import zipfile
+import rasterio
+import matplotlib.pyplot as plt
 
 
 class ShapefileNotFoundException(Exception):
@@ -100,3 +104,20 @@ def get_products_by_date_and_area(
 
     return products
 
+
+def unzip_sentinel2_data(directory: Path) -> None:
+    """Unzip all the zip files containing sentinel 2 data in a directory.
+
+    Args:
+        directory (Path): Path of a directory containing the zip files to
+            extract.
+    """
+    zipfiles = directory.glob('**/*.zip')
+
+    for zipfile_ in zipfiles:
+        with zipfile.ZipFile(zipfile_, 'r') as zip_ref:
+            zip_ref.extractall(directory)
+
+
+def get_sentinel2_bands(resolution: int, data_path: Path) -> List:
+    pass
