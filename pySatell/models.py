@@ -1,14 +1,15 @@
-import array
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List
 from numpy import ndarray
 from pathlib import Path
+from rasterio.mask import mask
 
 
 import numpy as np
 import rasterio
+import fiona
 
 
 class Platform(Enum):
@@ -62,42 +63,74 @@ class Bands:
     B8A: Band = None
 
 
-def get_sentinel2_bands(resolution: int, data_path: Path) -> Bands:
-    images_paths = data_path.glob(f'**/*B*_{resolution}m.jp2')
+@dataclass
+class Field:
+    bands: Bands
 
-    bands = {}
 
-    for image in images_paths:
-        band = str(image).split('_')[-2]
+class Fields:
 
-        with rasterio.open(image) as f:
-            bands[band] = Band(
-                BandNumber(band),
-                resolution,
-                f.read(1)
-            )
+    def __init__(self, shp_files_path: Path):
+        fiona_geometries = []
 
-    return Bands(**bands)
+        for field in shp_files_path.glob('./*.shp'):
+            file = fiona.open(field)
+            for geometry in file:
+                fiona_geometries.append(geometry['geometry'])
+
+        self.fields = fiona_geometries
+
+
+def get_sentinel2_bands(resolution: int, data_path: Path, fields: Fields) -> List[Bands]:
+    clipped_rasters = []
+
+    for field in fields.fields:
+
+        bands = {}
+        images_paths = data_path.glob(f'**/*B*_{resolution}m.jp2')
+
+        for image in images_paths:
+            band = str(image).split('_')[-2]
+
+            with rasterio.open(image) as f:
+
+                clipped_band, _ = mask(f, [field], crop=True)
+
+                bands[band] = Band(
+                    BandNumber(band),
+                    resolution,
+                    clipped_band
+                )
+
+        clipped_rasters.append(Bands(**bands))
+
+    return clipped_rasters
 
 
 class Sentinel2Bands:
 
-    def __init__(self, filepath: Path):
+    def __init__(self, filepath: Path, fields: Fields = None):
         acquisition_info = filepath.name.split('_')
 
         self.platform = Platform(acquisition_info[0])
         self.sensor = Sensor(acquisition_info[1])
         self.date = datetime.strptime(acquisition_info[2], "%Y%m%dT%H%M%S")
         self.data_path = filepath
+        self.fields = fields
 
     def get_ndvi_raster(self):
         np.seterr(divide='ignore', invalid='ignore')
-        bands = get_sentinel2_bands(10, self.data_path)
+        fields_bands = get_sentinel2_bands(10, self.data_path, self.fields)
 
-        band_nir = bands.B08.raster
-        band_red = bands.B04.raster
+        fields_ndvi = []
 
-        return (
+        for field_bands in fields_bands:
+            band_nir = field_bands.B08.raster
+            band_red = field_bands.B04.raster
+
+            fields_ndvi.append(
                 (band_nir.astype(float) - band_red.astype(float))
                 / (band_nir.astype(float) + band_red.astype(float))
-        )
+            )
+
+        return fields_ndvi
