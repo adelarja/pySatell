@@ -11,6 +11,7 @@ class Platform(Enum):
 
 
 class Sensor(Enum):
+    MSIL1C = 'MSIL1C'
     MSIL2A = 'MSIL2A'
 
 
@@ -69,3 +70,7 @@ class Sentinel2Bands:
         self.platform = Platform(acquisition_info[0])
         self.sensor = Sensor(acquisition_info[1])
         self.date = datetime.strptime(acquisition_info[2], "%Y%m%dT%H%M%S")
+        self.data_path = filepath
+
+    def get_ndvi_raster(self):
+        pass
