@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List
+from typing import List, OrderedDict
 from numpy import ndarray
 from pathlib import Path
 from rasterio.mask import mask
@@ -64,8 +64,11 @@ class Bands:
 
 
 @dataclass
-class Field:
-    bands: Bands
+class FieldData:
+    id: int
+    properties: OrderedDict
+    geometry: dict
+    bands: Bands = None
 
 
 class Fields:
