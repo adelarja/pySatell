@@ -62,6 +62,16 @@ class Bands:
     B12: Band = None
     B8A: Band = None
 
+    @property
+    def ndvi(self):
+        band_nir = self.B08.raster
+        band_red = self.B04.raster
+
+        return (
+                (band_nir.astype(float) - band_red.astype(float))
+                / (band_nir.astype(float) + band_red.astype(float))
+        )
+
 
 @dataclass
 class FieldData:
@@ -128,12 +138,7 @@ class Sentinel2Bands:
         fields_ndvi = []
 
         for field_bands in fields_bands:
-            band_nir = field_bands.B08.raster
-            band_red = field_bands.B04.raster
 
-            fields_ndvi.append(
-                (band_nir.astype(float) - band_red.astype(float))
-                / (band_nir.astype(float) + band_red.astype(float))
-            )
+            fields_ndvi.append(field_bands.ndvi)
 
         return fields_ndvi
