@@ -13,16 +13,23 @@ import fiona
 
 
 class Platform(Enum):
+    """Enum used to represent the platform holding the sensor."""
     SENTINEL_2_A = 'S2A'
     SENTINEL_2_B = 'S2B'
 
 
 class Sensor(Enum):
+    """Enum used to represent the different kinds of sensors.
+
+    MSI (Multi Spectral Instrument) is the optical sensor present in the
+    sentinel2 a and b platforms.
+    """
     MSIL1C = 'MSIL1C'
     MSIL2A = 'MSIL2A'
 
 
 class BandNumber(Enum):
+    """Enum used to represent the band number."""
     B0 = 'B0'
     B01 = 'B01'
     B02 = 'B02'
@@ -41,6 +48,15 @@ class BandNumber(Enum):
 
 @dataclass
 class Band:
+    """Data type used to encapsulate all the information for a single band.
+
+    Attributes:
+        number (BandNumber): represents the wavelength of the electromagnetic
+            spectrum that is being digitalized by the instrument.
+        resolution (int): The pixel resolution (for example, 10 represents a
+            10m by 10m pixel resolution).
+        raster (ndarray): A numpy array with the band information.
+    """
     number: BandNumber
     resolution: int
     raster: ndarray
@@ -48,6 +64,11 @@ class Band:
 
 @dataclass
 class Bands:
+    """Represents all the bands for a given instrument.
+
+    This class is mainly used to calculate the different indexes using
+        bands algebra.
+    """
     B01: Band = None
     B02: Band = None
     B03: Band = None
@@ -64,6 +85,7 @@ class Bands:
 
     @property
     def ndvi(self):
+        """:obj: `ndarray` of :obj: `float`: Property to obtain the NDVI index."""
         band_nir = self.B08.raster
         band_red = self.B04.raster
 
@@ -75,6 +97,15 @@ class Bands:
 
 @dataclass
 class FieldData:
+    """Encapsulates all the information of a particular Field.
+
+    Attributes:
+        id (int): Field ID.
+        properties (OrderedDict): All the properties contained in
+            a shape (shp) file.
+        geometry (dict): The geometries obtained from the shp file.
+        bands: A band object used for indexes calculations of the field.
+    """
     id: int
     properties: OrderedDict
     geometry: dict
@@ -82,6 +113,21 @@ class FieldData:
 
 
 class Fields:
+    """Represents all the fields that want to be analyzed.
+
+    The __init__ method receives a shape files path of a
+        directory containing all the shape files of the
+        fields that want to be analyzed.
+
+    Args:
+        shp_files_path (Path): A Path object of a directory
+            containing the shapefiles of the fields that
+            want to be analyzed.
+
+    Attributes:
+        fields (List[FieldData]): All the Field objects
+            with information about the fields.
+    """
 
     def __init__(self, shp_files_path: Path):
         fiona_geometries = []
@@ -95,6 +141,24 @@ class Fields:
 
 
 def get_sentinel2_bands(resolution: int, data_path: Path, fields: Fields) -> List[Bands]:
+    """Get the sentinel 2 bands of a list of fields.
+
+    The method obtain the sentinel2 bands for a particular resolution,
+        it clips the rasters using the field boundaries information,
+        and returns a list of Bands objects representing each of the
+        fields data.
+
+    Args:
+        resolution (int): The bands resolution in meters.
+            It can be 10, 20 or 60.
+        data_path (Path): Path object where the sentinel2
+            bands information is located.
+        fields (Fields): Fields object with information about
+            the fields that want to be analyzed.
+
+    Returns:
+        A List[Bands] object each one representing a field's band.
+    """
     clipped_rasters = []
 
     for field in fields.fields:
