@@ -140,7 +140,7 @@ class Fields:
         self.fields = fiona_geometries
 
 
-def get_sentinel2_bands(resolution: int, data_path: Path, fields: Fields) -> List[Bands]:
+def get_sentinel2_bands(resolution: int, data_path: Path, fields_path: Path) -> List[Bands]:
     """Get the sentinel 2 bands of a list of fields.
 
     The method obtain the sentinel2 bands for a particular resolution,
@@ -153,13 +153,14 @@ def get_sentinel2_bands(resolution: int, data_path: Path, fields: Fields) -> Lis
             It can be 10, 20 or 60.
         data_path (Path): Path object where the sentinel2
             bands information is located.
-        fields (Fields): Fields object with information about
-            the fields that want to be analyzed.
+        fields_path (Path): Directory path with the shp files
+            representing the fields that want to be analyzed.
 
     Returns:
         A List[Bands] object each one representing a field's band.
     """
     clipped_rasters = []
+    fields = Fields(fields_path)
 
     for field in fields.fields:
 
@@ -186,18 +187,18 @@ def get_sentinel2_bands(resolution: int, data_path: Path, fields: Fields) -> Lis
 
 class Sentinel2Bands:
 
-    def __init__(self, filepath: Path, fields: Fields = None):
+    def __init__(self, filepath: Path, fields_path: Path = None):
         acquisition_info = filepath.name.split('_')
 
         self.platform = Platform(acquisition_info[0])
         self.sensor = Sensor(acquisition_info[1])
         self.date = datetime.strptime(acquisition_info[2], "%Y%m%dT%H%M%S")
         self.data_path = filepath
-        self.fields = fields
+        self.fields_path = fields_path
 
     def get_ndvi_raster(self):
         np.seterr(divide='ignore', invalid='ignore')
-        fields_bands = get_sentinel2_bands(10, self.data_path, self.fields)
+        fields_bands = get_sentinel2_bands(10, self.data_path, self.fields_path)
 
         fields_ndvi = []
 
