@@ -1,8 +1,20 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 from pySatell.models import Bands
+
+
+@dataclass
+class Filter:
+    date_from: datetime
+    date_to: datetime
+
+
+@dataclass
+class SentinelFilter(Filter):
+    cloud_coverage_percentage: tuple = (0, 100)
 
 
 class MSIManagerCreator(ABC):
@@ -39,6 +51,8 @@ class LandsatMSIManagerCreator(MSIManagerCreator):
 
 
 class MSIManager(ABC):
+    def __init__(self, filters: Filter):
+        self.filters = filters
 
     @abstractmethod
     def check_for_new_images(self, date: datetime):
