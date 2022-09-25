@@ -88,7 +88,7 @@ def get_products_by_date_and_area(
         An OrderedDict with information of all the available products for the desired
             date and area.
     """
-    api = SentinelAPI(config.API_USER, config.API_PASSWORD, config.API_URL)
+    api = SentinelAPI(config.API_USER, config.API_PASSWORD, config.SENTINEL_API_URL)
 
     footprint = geojson_to_wkt(read_geojson(geojson_path))
     products = api.query(
