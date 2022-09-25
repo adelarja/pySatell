@@ -6,6 +6,8 @@ from pathlib import Path
 from pySatell import sentinel_api
 from pySatell.models import Bands
 
+from sentinelsat import geojson_to_wkt
+
 
 @dataclass
 class Filter:
@@ -56,7 +58,7 @@ class MSIManager(ABC):
         self.filters = filters
 
     @abstractmethod
-    def check_for_new_images(self, date: datetime):
+    def check_for_new_images(self, desired_zone: dict):
         pass
 
     @abstractmethod
@@ -70,8 +72,18 @@ class MSIManager(ABC):
 
 class SentinelMSIManager(MSIManager):
 
-    def check_for_new_images(self, date: datetime):
-        pass
+    def check_for_new_images(self, desired_zone: dict):
+        footprint = geojson_to_wkt(desired_zone)
+
+        return sentinel_api.query(
+            footprint,
+            date=(
+                datetime.strftime(self.filters.date_from, "%Y%m%d"),
+                self.filters.date_to.date()
+            ),
+            platformname=self.filters.platform_name,
+            cloudcoverpercentage=self.filters.cloud_coverage_percentage
+        )
 
     def download_images(self, date: datetime):
         pass
@@ -82,7 +94,7 @@ class SentinelMSIManager(MSIManager):
 
 class LandsatMSIManager(MSIManager):
 
-    def check_for_new_images(self, date: datetime):
+    def check_for_new_images(self, desired_zone: dict):
         pass
 
     def download_images(self, date: datetime):
