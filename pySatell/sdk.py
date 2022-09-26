@@ -28,7 +28,7 @@ class MSIManagerCreator(ABC):
 
     def get_indexes(self, date: datetime):
         msi_manager = self.create_msi_image_manager()
-        new_images = msi_manager.check_for_new_images(date)
+        new_images = msi_manager.download_new_images(date)
 
         if new_images:
             msi_manager.download_images(date)
@@ -58,11 +58,7 @@ class MSIManager(ABC):
         self.filters = filters
 
     @abstractmethod
-    def check_for_new_images(self, desired_zone: dict):
-        pass
-
-    @abstractmethod
-    def download_images(self, date: datetime):
+    def download_new_images(self, desired_zone: dict):
         pass
 
     @abstractmethod
@@ -72,10 +68,10 @@ class MSIManager(ABC):
 
 class SentinelMSIManager(MSIManager):
 
-    def check_for_new_images(self, desired_zone: dict):
+    def download_new_images(self, desired_zone: dict):
         footprint = geojson_to_wkt(desired_zone)
 
-        return sentinel_api.query(
+        products = sentinel_api.query(
             footprint,
             date=(
                 datetime.strftime(self.filters.date_from, "%Y%m%d"),
@@ -85,8 +81,7 @@ class SentinelMSIManager(MSIManager):
             cloudcoverpercentage=self.filters.cloud_coverage_percentage
         )
 
-    def download_images(self, date: datetime):
-        pass
+        sentinel_api.download_all(products)
 
     def get_msi_bands(self, msi_data_path: Path):
         pass
@@ -94,10 +89,7 @@ class SentinelMSIManager(MSIManager):
 
 class LandsatMSIManager(MSIManager):
 
-    def check_for_new_images(self, desired_zone: dict):
-        pass
-
-    def download_images(self, date: datetime):
+    def download_new_images(self, desired_zone: dict):
         pass
 
     def get_msi_bands(self, msi_data_path: Path):
