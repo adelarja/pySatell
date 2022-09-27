@@ -1,12 +1,15 @@
+import rasterio
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 from pySatell import sentinel_api
-from pySatell.models import Bands
+from pySatell.models import Band, BandNumber, Bands, Fields
 
 from sentinelsat import geojson_to_wkt
+from rasterio.mask import mask
 
 
 @dataclass
@@ -62,7 +65,7 @@ class MSIManager(ABC):
         pass
 
     @abstractmethod
-    def get_msi_bands(self, msi_data_path: Path):
+    def get_msi_bands(self, msi_data_path: Path, fields: Fields):
         pass
 
 
@@ -83,8 +86,29 @@ class SentinelMSIManager(MSIManager):
 
         sentinel_api.download_all(products)
 
-    def get_msi_bands(self, msi_data_path: Path):
-        pass
+    def get_msi_bands(self, msi_data_path: Path, fields: Fields):
+        clipped_rasters = []
+
+        for field in fields.fields:
+
+            bands = {}
+            images_paths = msi_data_path.glob(f'**/*B*_{self.filters.resolution}m.jp2')
+
+            for image in images_paths:
+                band = str(image).split('_')[-2]
+
+                with rasterio.open(image) as f:
+                    clipped_band, _ = mask(f, [field], crop=True)
+
+                    bands[band] = Band(
+                        BandNumber(band),
+                        self.filters.resolution,
+                        clipped_band
+                    )
+
+            clipped_rasters.append(Bands(**bands))
+
+        return clipped_rasters
 
 
 class LandsatMSIManager(MSIManager):
@@ -92,5 +116,5 @@ class LandsatMSIManager(MSIManager):
     def download_new_images(self, desired_zone: dict):
         pass
 
-    def get_msi_bands(self, msi_data_path: Path):
+    def get_msi_bands(self, msi_data_path: Path, fields: Fields):
         pass
