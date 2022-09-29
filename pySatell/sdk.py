@@ -13,6 +13,30 @@ from rasterio.mask import mask
 
 
 @dataclass
+class QueryParams:
+    date_from: datetime
+    date_to: datetime
+    desired_zone: dict
+
+
+@dataclass
+class SentinelQueryParams(QueryParams):
+    platform_name: str = 'Sentinel-2'
+    cloud_coverage_percentage: tuple = (0, 100)
+
+
+@dataclass
+class ProcessingParams:
+    data_path: Path
+    fields: Fields
+
+
+@dataclass
+class SentinelProcessingParams(ProcessingParams):
+    resolution: int
+
+
+@dataclass
 class Filter:
     date_from: datetime
     date_to: datetime
@@ -29,13 +53,16 @@ class MSIManagerCreator(ABC):
     def create_msi_image_manager(self):
         pass
 
-    def get_indexes(self, date: datetime):
+    def get_indexes(self, filters: Filter):
+        pass
+
+    def get_new_indexes(self, query_params: QueryParams, processing_params: ProcessingParams):
         msi_manager = self.create_msi_image_manager()
-        new_images = msi_manager.download_new_images(date)
+        new_images = msi_manager.download_new_images(query_params.desired_zone)
 
         if new_images:
-            msi_manager.download_images(date)
-            bands = msi_manager.get_msi_bands()
+            msi_manager.download_images(query_params.desired_zone)
+            bands = msi_manager.get_msi_bands(processing_params)
 
             indexes = [
                 index for index in dir(Bands) if callable(getattr(Bands, index)) and index.startswith('__') is False
@@ -47,52 +74,50 @@ class MSIManagerCreator(ABC):
 class SentinelMSIManagerCreator(MSIManagerCreator):
 
     def create_msi_image_manager(self):
-        pass
+        return SentinelMSIManager()
 
 
 class LandsatMSIManagerCreator(MSIManagerCreator):
 
     def create_msi_image_manager(self):
-        pass
+        return LandsatMSIManager()
 
 
 class MSIManager(ABC):
-    def __init__(self, filters: Filter):
-        self.filters = filters
 
     @abstractmethod
-    def download_new_images(self, desired_zone: dict):
+    def download_new_images(self, query_params: QueryParams):
         pass
 
     @abstractmethod
-    def get_msi_bands(self, msi_data_path: Path, fields: Fields):
+    def get_msi_bands(self, processing_params: ProcessingParams):
         pass
 
 
 class SentinelMSIManager(MSIManager):
 
-    def download_new_images(self, desired_zone: dict):
-        footprint = geojson_to_wkt(desired_zone)
+    def download_new_images(self, query_params: SentinelQueryParams):
+        footprint = geojson_to_wkt(query_params.desired_zone)
 
         products = sentinel_api.query(
             footprint,
             date=(
-                datetime.strftime(self.filters.date_from, "%Y%m%d"),
-                self.filters.date_to.date()
+                datetime.strftime(query_params.date_from, "%Y%m%d"),
+                query_params.date_to.date()
             ),
-            platformname=self.filters.platform_name,
-            cloudcoverpercentage=self.filters.cloud_coverage_percentage
+            platformname=query_params.platform_name,
+            cloudcoverpercentage=query_params.cloud_coverage_percentage
         )
 
         sentinel_api.download_all(products)
 
-    def get_msi_bands(self, msi_data_path: Path, fields: Fields):
+    def get_msi_bands(self, processing_params: SentinelProcessingParams):
         clipped_rasters = []
 
-        for field in fields.fields:
+        for field in processing_params.fields.fields:
 
             bands = {}
-            images_paths = msi_data_path.glob(f'**/*B*_{self.filters.resolution}m.jp2')
+            images_paths = processing_params.data_path.glob(f'**/*B*_{processing_params.resolution}m.jp2')
 
             for image in images_paths:
                 band = str(image).split('_')[-2]
@@ -102,7 +127,7 @@ class SentinelMSIManager(MSIManager):
 
                     bands[band] = Band(
                         BandNumber(band),
-                        self.filters.resolution,
+                        processing_params.resolution,
                         clipped_band
                     )
 
@@ -113,8 +138,8 @@ class SentinelMSIManager(MSIManager):
 
 class LandsatMSIManager(MSIManager):
 
-    def download_new_images(self, desired_zone: dict):
+    def download_new_images(self, query_params: QueryParams):
         pass
 
-    def get_msi_bands(self, msi_data_path: Path, fields: Fields):
+    def get_msi_bands(self, processing_params: ProcessingParams):
         pass
