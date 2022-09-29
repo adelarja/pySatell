@@ -1,5 +1,9 @@
 import typer
 
+from pathlib import Path
+
+from utils import generate_geojsons
+
 app = typer.Typer(help="CLI used to manage satellite images data.")
 
 
@@ -12,7 +16,7 @@ def shp_to_geojson(
         )
 ):
     """Convert shape to geojson."""
-    pass
+    generate_geojsons(Path(path))
 
 
 @app.command
@@ -28,7 +32,7 @@ def get_vegetation_indexes(
         )
 ):
     """Get all vegetation indexes for the desired images."""
-    pass
+
 
 
 if __name__ == '__main__':
