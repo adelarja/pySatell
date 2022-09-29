@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Generator, Dict, Tuple, List
+from typing import Generator, Dict, Tuple
 from datetime import datetime
 from sentinelsat import SentinelAPI, read_geojson, geojson_to_wkt
 from data import config
