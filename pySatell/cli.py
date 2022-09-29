@@ -1,9 +1,35 @@
-"""Add a cli using typer in order to provide tools to make easier the process to obtain fields vegetation
-indexes.
+import typer
 
--> Command to check if there are new Sentinel 2 images giving a date.
--> Command to download the desired images.
--> Command to obtain geojson files using shp files.
--> Command to process the NDVI (and more indexes) using the differents bands of the raster images.
--> More...
-"""
+app = typer.Typer(help="CLI used to manage satellite images data.")
+
+
+@app.command
+def shp_to_geojson(
+        path: str = typer.Argument(
+            '.',
+            help='Path of the directory containing the shp files to convert.',
+            metavar='path'
+        )
+):
+    """Convert shape to geojson."""
+    pass
+
+
+@app.command
+def get_vegetation_indexes(
+        image_path: str = typer.Argument(
+            '.',
+            help='Path of the directory containing the satellite images.',
+            metavar='image_path'
+        ),
+        fields_path: str = typer.Argument(
+            '.',
+            help='Path of the directory containing the shapefiles of the desired fields.'
+        )
+):
+    """Get all vegetation indexes for the desired images."""
+    pass
+
+
+if __name__ == '__main__':
+    app()
