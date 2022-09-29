@@ -7,7 +7,7 @@ from utils import generate_geojsons
 app = typer.Typer(help="CLI used to manage satellite images data.")
 
 
-@app.command
+@app.command()
 def shp_to_geojson(
         path: str = typer.Argument(
             '.',
@@ -19,7 +19,7 @@ def shp_to_geojson(
     generate_geojsons(Path(path))
 
 
-@app.command
+@app.command()
 def get_vegetation_indexes(
         image_path: str = typer.Argument(
             '.',
@@ -32,7 +32,6 @@ def get_vegetation_indexes(
         )
 ):
     """Get all vegetation indexes for the desired images."""
-
 
 
 if __name__ == '__main__':
