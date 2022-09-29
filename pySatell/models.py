@@ -83,9 +83,8 @@ class Bands:
     B12: Band = None
     B8A: Band = None
 
-    @property
     def ndvi(self):
-        """:obj: `ndarray` of :obj: `float`: Property to obtain the NDVI index."""
+        """Returns the ndvi index."""
         band_nir = self.B08.raster
         band_red = self.B04.raster
 

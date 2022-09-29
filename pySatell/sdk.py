@@ -5,8 +5,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from pySatell import sentinel_api
-from pySatell.models import Band, BandNumber, Bands, Fields
+from data import sentinel_api
+from models import Band, BandNumber, Bands, Fields
 
 from sentinelsat import geojson_to_wkt
 from rasterio.mask import mask
@@ -53,8 +53,18 @@ class MSIManagerCreator(ABC):
     def create_msi_image_manager(self):
         pass
 
-    def get_indexes(self, filters: Filter):
-        pass
+    def get_indexes(self, processing_params: ProcessingParams):
+        msi_manager = self.create_msi_image_manager()
+        bands = msi_manager.get_msi_bands(processing_params)
+        indexes = [
+            index for index in dir(Bands) if callable(getattr(Bands, index)) and index.startswith('__') is False
+        ]
+        calculated_indexes = []
+        for index in indexes:
+            for band in bands:
+                calculated_indexes.append(band.__getattribute__(index)())
+
+        return calculated_indexes
 
     def get_new_indexes(self, query_params: QueryParams, processing_params: ProcessingParams):
         msi_manager = self.create_msi_image_manager()
@@ -68,7 +78,12 @@ class MSIManagerCreator(ABC):
                 index for index in dir(Bands) if callable(getattr(Bands, index)) and index.startswith('__') is False
             ]
 
-            return [bands.__getattribute__(index)() for index in indexes]
+            calculated_indexes = []
+            for index in indexes:
+                for band in bands:
+                    calculated_indexes.append(band.__getattribute__(index)())
+
+            return calculated_indexes
 
 
 class SentinelMSIManagerCreator(MSIManagerCreator):
