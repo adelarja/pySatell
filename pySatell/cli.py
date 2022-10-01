@@ -92,8 +92,5 @@ def get_vegetation_indexes(
     return indexes
 
 
-
-
-
 if __name__ == '__main__':
     app()
