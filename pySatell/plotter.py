@@ -1,8 +1,9 @@
-from matplotlib import colors
 import numpy as np
-import os
-import matplotlib.pyplot as plt
-from matplotlib import cm
+
+from attrs import define, field
+from matplotlib import colors
+
+from .models import Bands
 
 
 def inter_from_256(x):
@@ -28,3 +29,11 @@ cdict = {
 }
 
 ndvi_cmap = colors.LinearSegmentedColormap('ndvi_cmap', segmentdata=cdict)
+
+
+@define
+class IndexPlotter:
+    vegetation_index: field(converter=np.asarray)
+
+    def plot(self, ax=None, kws=None):
+        pass
