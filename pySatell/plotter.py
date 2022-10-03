@@ -47,5 +47,5 @@ class IndexPlotter:
         ax = plt.gca() if ax is None else ax
         kws = {} if kws is None else kws
 
-        ax.plot(**kws)
+        ax.imshow(**kws)
         return ax
