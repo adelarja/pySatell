@@ -40,12 +40,22 @@ class IndexPlotter:
         method = getattr(self, method, None)
         return method(**kwargs)
 
-    def plot(self, ax=None, kws=None):
-        pass
+    def ndvi_plot(self, ax=None, kws=None):
+
+        ndvi = self.vegetation_index.copy()
+
+        ndvi[ndvi <= 0] = 0
+        ndvi[ndvi > 0.9] = 10
+
+        for index, step in np.enumerate(np.arange(0.0, 0.9, 0.1)):
+            ndvi[(ndvi > step) & (ndvi <= step + 0.1)] = index
+
+        ax.imshow(ndvi, **kws)
+        return ax
 
     def heat_map(self, ax=None, kws=None):
         ax = plt.gca() if ax is None else ax
         kws = {} if kws is None else kws
 
-        ax.imshow(**kws)
+        ax.imshow(self.vegetation_index, **kws)
         return ax
