@@ -1,6 +1,6 @@
 from sentinelsat import SentinelAPI
 
-from data import config
+from data import API_USER, API_PASSWORD, SENTINEL_API_URL
 
 
-sentinel_api = SentinelAPI(config.API_USER, config.API_PASSWORD, config.SENTINEL_API_URL)
+sentinel_api = SentinelAPI(API_USER, API_PASSWORD, SENTINEL_API_URL)
