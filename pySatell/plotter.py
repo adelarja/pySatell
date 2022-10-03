@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import numpy as np
 
 from attrs import define, field
@@ -35,5 +36,16 @@ ndvi_cmap = colors.LinearSegmentedColormap('ndvi_cmap', segmentdata=cdict)
 class IndexPlotter:
     vegetation_index: field(converter=np.asarray)
 
+    def __call__(self, method='heat_map', **kwargs):
+        method = getattr(self, method, None)
+        return method(**kwargs)
+
     def plot(self, ax=None, kws=None):
         pass
+
+    def heat_map(self, ax=None, kws=None):
+        ax = plt.gca() if ax is None else ax
+        kws = {} if kws is None else kws
+
+        ax.plot(**kws)
+        return ax
