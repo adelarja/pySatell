@@ -4,8 +4,6 @@ import numpy as np
 from attrs import define, field
 from matplotlib import colors
 
-from .models import Bands
-
 
 def inter_from_256(x):
     return np.interp(x=x, xp=[0, 255], fp=[0, 1])
@@ -42,13 +40,16 @@ class IndexPlotter:
 
     def ndvi_plot(self, ax=None, kws=None):
 
-        ndvi = self.vegetation_index.copy()
+        ax = plt.gca() if ax is None else ax
+        kws = {} if kws is None else kws
+
+        ndvi = self.vegetation_index.copy()[0]
 
         ndvi[ndvi <= 0] = 0
         ndvi[ndvi > 0.9] = 10
 
-        for index, step in np.enumerate(np.arange(0.0, 0.9, 0.1)):
-            ndvi[(ndvi > step) & (ndvi <= step + 0.1)] = index
+        for index, step in np.ndenumerate(np.arange(0.0, 0.9, 0.1)):
+            ndvi[(ndvi > step) & (ndvi <= step + 0.1)] = index[0] + 1
 
         ax.imshow(ndvi, **kws)
         return ax
@@ -57,5 +58,5 @@ class IndexPlotter:
         ax = plt.gca() if ax is None else ax
         kws = {} if kws is None else kws
 
-        ax.imshow(self.vegetation_index, **kws)
+        ax.imshow(self.vegetation_index[0], **kws)
         return ax

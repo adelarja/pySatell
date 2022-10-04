@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 
 from pathlib import Path
 
-from utils import generate_geojsons
+from plotter import IndexPlotter
 from sdk import LandsatMSIManagerCreator, SentinelMSIManagerCreator, SentinelProcessingParams, Fields
+from utils import generate_geojsons
 
 app = typer.Typer(help="CLI used to manage satellite images data.")
 
@@ -90,6 +91,60 @@ def get_vegetation_indexes(
         plt.show()
 
     return indexes
+
+
+@app.command()
+def plot_vegetation_indexes(
+        image_path: str = typer.Argument(
+            '.',
+            help='Path of the directory containing the satellite images.',
+            metavar='image_path'
+        ),
+        fields_path: str = typer.Argument(
+            '.',
+            help='Path of the directory containing the shapefiles of the desired fields.'
+        ),
+        sentinel: bool = typer.Option(
+            False,
+            help='Process sentinel images.',
+            metavar='sentinel'
+        ),
+        landsat: bool = typer.Option(
+            False,
+            help='Process landsat images.',
+            metavar='landsat'
+        )
+
+):
+    """Get all vegetation indexes for the desired images."""
+
+    if sentinel:
+        fields = Fields(Path(fields_path))
+        filters = SentinelProcessingParams(
+            data_path=Path(image_path),
+            fields=fields,
+            resolution=10
+        )
+        manager = SentinelMSIManagerCreator()
+    elif landsat:
+        manager = LandsatMSIManagerCreator()
+        filters = None
+    else:
+        manager = SentinelMSIManagerCreator()
+        filters = None
+
+    indexes = manager.get_indexes(filters)
+
+    for band in indexes:
+        index_plotter = IndexPlotter(band)
+
+        ndvi_ax = index_plotter('ndvi_plot', ax=None, kws={'cmap': 'RdYlGn'})
+        ndvi_ax.plot()
+        plt.show()
+
+        heat_map_ax = index_plotter('heat_map', ax=None, kws={'cmap': 'RdYlGn'})
+        heat_map_ax.plot()
+        plt.show()
 
 
 if __name__ == '__main__':
