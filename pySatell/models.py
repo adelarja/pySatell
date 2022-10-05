@@ -99,16 +99,17 @@ class FieldData:
     """Encapsulates all the information of a particular Field.
 
     Attributes:
-        id (int): Field ID.
         properties (OrderedDict): All the properties contained in
             a shape (shp) file.
         geometry (dict): The geometries obtained from the shp file.
         bands: A band object used for indexes calculations of the field.
     """
-    id: int
     properties: OrderedDict
     geometry: dict
     bands: Bands = None
+
+    def get_all_indexes(self):
+        pass
 
 
 class Fields:
@@ -134,7 +135,11 @@ class Fields:
         for field in shp_files_path.glob('./*.shp'):
             file = fiona.open(field)
             for geometry in file:
-                fiona_geometries.append(geometry['geometry'])
+                fiona_geometries.append(
+                    FieldData(
+                        properties=geometry['properties'], geometry=geometry['geometry']
+                    )
+                )
 
         self.fields = fiona_geometries
 

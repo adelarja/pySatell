@@ -53,6 +53,10 @@ class MSIManagerCreator(ABC):
     def create_msi_image_manager(self):
         pass
 
+    def get_fields(self, processing_params: ProcessingParams):
+        msi_manager = self.create_msi_image_manager()
+        return msi_manager.get_msi_bands(processing_params)
+
     def get_indexes(self, processing_params: ProcessingParams):
         msi_manager = self.create_msi_image_manager()
         bands = msi_manager.get_msi_bands(processing_params)
@@ -62,7 +66,7 @@ class MSIManagerCreator(ABC):
         calculated_indexes = []
         for index in indexes:
             for band in bands:
-                calculated_indexes.append(band.__getattribute__(index)())
+                calculated_indexes.append(band.bands.__getattribute__(index)())
 
         return calculated_indexes
 
@@ -81,7 +85,7 @@ class MSIManagerCreator(ABC):
             calculated_indexes = []
             for index in indexes:
                 for band in bands:
-                    calculated_indexes.append(band.__getattribute__(index)())
+                    calculated_indexes.append(band.bands.__getattribute__(index)())
 
             return calculated_indexes
 
@@ -138,7 +142,7 @@ class SentinelMSIManager(MSIManager):
                 band = str(image).split('_')[-2]
 
                 with rasterio.open(image) as f:
-                    clipped_band, _ = mask(f, [field], crop=True)
+                    clipped_band, _ = mask(f, [field.geometry], crop=True)
 
                     bands[band] = Band(
                         BandNumber(band),
@@ -146,7 +150,8 @@ class SentinelMSIManager(MSIManager):
                         clipped_band
                     )
 
-            clipped_rasters.append(Bands(**bands))
+            field.bands = Bands(**bands)
+            clipped_rasters.append(field)
 
         return clipped_rasters
 
