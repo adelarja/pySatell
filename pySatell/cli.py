@@ -133,18 +133,22 @@ def plot_vegetation_indexes(
         manager = SentinelMSIManagerCreator()
         filters = None
 
-    indexes = manager.get_indexes(filters)
+    fields = manager.get_fields(filters)
 
-    for band in indexes:
-        index_plotter = IndexPlotter(band)
+    for field in fields:
+        for index_name, index_raster in field.get_all_indexes().items():
+            index_plotter = IndexPlotter(index_raster)
+            ndvi_ax = index_plotter('ndvi_plot', ax=None, kws={'cmap': 'RdYlGn'})
+            ndvi_ax.plot()
+            ndvi_ax.set_title(index_name)
+            plt.suptitle(field.farm_name)
+            plt.show()
 
-        ndvi_ax = index_plotter('ndvi_plot', ax=None, kws={'cmap': 'RdYlGn'})
-        ndvi_ax.plot()
-        plt.show()
-
-        heat_map_ax = index_plotter('heat_map', ax=None, kws={'cmap': 'RdYlGn'})
-        heat_map_ax.plot()
-        plt.show()
+            heat_map_ax = index_plotter('heat_map', ax=None, kws={'cmap': 'RdYlGn'})
+            heat_map_ax.plot()
+            heat_map_ax.set_title(f'Heatmap for {index_name}')
+            plt.suptitle(field.farm_name)
+            plt.show()
 
 
 if __name__ == '__main__':

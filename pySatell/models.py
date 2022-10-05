@@ -108,6 +108,11 @@ class FieldData:
     geometry: dict
     bands: Bands = None
 
+    @property
+    def farm_name(self) -> str:
+        """Returns the farm_name if exists in the properties."""
+        return self.properties.get('farm_name', "")
+
     def get_all_indexes(self) -> dict:
         """Returns all indexes for a given bands object.
 
