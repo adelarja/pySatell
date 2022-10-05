@@ -108,8 +108,21 @@ class FieldData:
     geometry: dict
     bands: Bands = None
 
-    def get_all_indexes(self):
-        pass
+    def get_all_indexes(self) -> dict:
+        """Returns all indexes for a given bands object.
+
+        Returns:
+            A dict with the name of the index as the key and the
+                calculated index raster as the value.
+        """
+        indexes = [
+            index for index in dir(Bands) if callable(getattr(Bands, index)) and index.startswith('__') is False
+        ]
+        calculated_indexes = {}
+        for index in indexes:
+            calculated_indexes.update({index: self.bands.__getattribute__(index)()})
+
+        return calculated_indexes
 
 
 class Fields:
