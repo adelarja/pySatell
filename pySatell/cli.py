@@ -138,6 +138,7 @@ def plot_vegetation_indexes(
     for field in fields:
         for index_name, index_raster in field.get_all_indexes().items():
             index_plotter = IndexPlotter(index_raster)
+
             ndvi_ax = index_plotter('ndvi_plot', ax=None, kws={'cmap': 'RdYlGn'})
             ndvi_ax.plot()
             ndvi_ax.set_title(index_name)
