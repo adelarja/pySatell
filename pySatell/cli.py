@@ -116,7 +116,7 @@ def plot_vegetation_indexes(
         )
 
 ):
-    """Get all vegetation indexes for the desired images."""
+    """Plot vegetation indexes."""
 
     if sentinel:
         fields = Fields(Path(fields_path))
