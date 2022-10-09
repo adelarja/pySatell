@@ -1,7 +1,7 @@
 import typer
 
-import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 
 from pathlib import Path
 
@@ -145,7 +145,10 @@ def plot_vegetation_indexes(
             plt.suptitle(field.farm_name)
             plt.show()
 
-            heat_map_ax = index_plotter('heat_map', ax=None, kws={'cmap': 'RdYlGn'})
+            p1 = 1
+            p2 = 99
+            vmin, vmax = np.percentile(index_raster[0], (p1, p2))
+            heat_map_ax = index_plotter('heat_map', ax=None, kws={'cmap': 'RdYlGn', 'vmin': vmin, 'vmax': vmax})
             heat_map_ax.plot()
             heat_map_ax.set_title(f'Heatmap for {index_name}')
             plt.suptitle(field.farm_name)
