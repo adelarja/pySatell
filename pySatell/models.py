@@ -93,6 +93,18 @@ class Bands:
                 / (band_nir.astype(float) + band_red.astype(float))
         )
 
+    def evi(self):
+        """Returns the EVI index."""
+        band_nir = self.B08.raster
+        band_red = self.B04.raster
+        band_blue = self.B02.raster
+
+        evi = 2.5 * (
+                (band_nir - band_red) /
+                ((band_nir + (6 * band_red) - (7.5 * band_blue)) + 1)
+        )
+        return evi
+
 
 @dataclass
 class FieldData:
