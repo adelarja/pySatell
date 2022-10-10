@@ -127,6 +127,38 @@ class Bands:
         )
         return osavi
 
+    def arvi(self):
+        """Returns the Atmospheric Resistant Vegetation Index (ARVI)."""
+        band_nir = self.B08.raster
+        band_red = self.B04.raster
+        band_blue = self.B02.raster
+
+        arvi = (
+                (band_nir - (2 * band_red) + band_blue) /
+                (band_nir + (2 * band_red) + band_blue)
+        )
+        return arvi
+
+    def gci(self):
+        """Returns the Green Chlorophyll Index (GCI)."""
+        band_nir = self.B08.raster
+        band_green = self.B03.raster
+
+        gci = (band_nir / band_green) - 1
+        return gci
+
+    def sipi(self):
+        """Returns the Structure Insensitive Pigment Index (SIPI)."""
+        band_nir = self.B08.raster
+        band_red = self.B04.raster
+        band_blue = self.B02.raster
+
+        sipi = (
+                (band_nir - band_blue) /
+                (band_nir - band_red)
+        )
+        return sipi
+
 
 @dataclass
 class FieldData:
