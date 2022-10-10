@@ -105,6 +105,28 @@ class Bands:
         )
         return evi
 
+    def savi(self):
+        """Returns the Soil Adjusted Vegetation Index (SAVI)."""
+        band_nir = self.B08.raster
+        band_red = self.B04.raster
+
+        savi = 1.5 * (
+                (band_nir - band_red) /
+                (band_nir + band_red + 0.5)
+        )
+        return savi
+
+    def osavi(self):
+        """Returns the Optimized SAVI index."""
+        band_nir = self.B08.raster
+        band_red = self.B04.raster
+
+        osavi = (
+                (band_nir - band_red) /
+                (band_nir + band_red + 0.16)
+        )
+        return osavi
+
 
 @dataclass
 class FieldData:
