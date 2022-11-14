@@ -1,0 +1,129 @@
+///////////////////////////////////////////
+// CÁLCULO DE ANOMALÍAS NDVI
+//////////////////////////////////////////
+
+/* Consignas trabajo práctico:
+1. Cargar el shapefile del potrero 6 al Google Earth Engine (GEE)
+2. Dibujar un rectángulo tal como vimos en práctica alredeor del protrero 6
+3. Calcular la anomalía NDVI en ese recatángulo.
+4. Exportar el raster al drive y descargarlo a su disco local
+5. Crear un mapa en QGIS en donde se observe el raster de anomalias NDVI y el potrero 6
+   agregue una leyenda que indique la escala de anomalías NDVI.
+6. En el mismo mapa indique si el potrero 6 se encuntra en una zona de anomalía NDVI bajo
+   medio o alto? */
+
+// Suba el Shapefile a GEE y haga clic en ejecutar (run)   
+// agregar poligono potrero 6
+var potrero_6 =  ee.FeatureCollection(table).geometry();
+// visualizar potrero 6
+Map.addLayer(potrero_6,{}, "Potrero 6", 0);
+Map.centerObject(potrero_6, 9);
+
+// active la capa potrero 6 y dibuje un rectángulo alrededor del potrero 6
+// tal como vimos en la práctica
+
+// dia calendario de inicio y fin 
+// segunda quicena de febrereo
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+//var start_day =49;
+//var end_day = 49;
+
+// Crear PRIMER DATASET
+// vamos a crear una funcion para cargar la coleccion de imagenes de modis
+// filtrar por fecha 2000 al 2021
+// extraer solamente las imagenes del dia 49 de la serie temporal
+// intersectar la colleccion de imagenes con nuestra area de estudio
+// seleccionar solamente NDVI
+// cortar las imagenes a nuestra area de estudio
+// QUITE EL COMENTARIO DEL CÓDIGO ABAJO 
+// ELIMINE LA BARRA Y ASTERISCO /* y */ al incio y final del bloque y ejecute
+/*var dataset = ee.ImageCollection('MODIS/006/MOD13Q1')
+      .filter(ee.Filter.date('2000-02-18', '2021-12-31'))
+      .filter(ee.Filter.calendarRange(start_day, end_day, "day_of_year"))
+      .filterBounds(geometry)
+      .select("NDVI")
+      .map(function (image){return image.clip(geometry)});*/
+
+// imprimir las primeras 10 imagenes de la coleccion de imagenes filtradas 
+// de un total de 22
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+//print("MODIS", dataset);
+
+////////////////////////////////////////////////
+// Formula calcular anomalia NDVI
+//////////////////////////////////////////////
+// NDVI AQ = NDVI Q - NDVI Q Promedio Serie / Desviacion Estandard NDVI serie
+///////////////////////////////////////////////
+// calcular la media de la serie
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+//var media_serie = dataset.reduce(ee.Reducer.mean());
+//print ("media", media_serie);
+
+// calcular la desviacion estandard de la serie
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+//var DSTD_serie = dataset.reduce(ee.Reducer.stdDev());
+//print ("desvio", DSTD_serie);
+
+// Crear segundo DATASET
+// vamos a crear una funcion para cargar la coleccion de imagenes de modis
+// filtrar por fecha, enero a diciembre del AÑO 2022 
+// extraer solamente las imagenes del dia 49 de la serie temporal
+// intersectar la colleccion de imagenes con nuestra area de estudio
+// seleccionar solamente NDVI
+// cortar las imagenes a nuestra area de estudio
+// QUITE EL COMENTARIO DEL CÓDIGO ABAJO 
+// ELIMINE LA BARRA Y ASTERISCO /* y */ al incio y final del bloque y ejecute
+/*var dataset2 = ee.ImageCollection('MODIS/006/MOD13Q1')
+      .filter(ee.Filter.date('2022-01-01', '2022-12-31'))
+      .filter(ee.Filter.calendarRange(start_day, end_day, "day_of_year"))
+      .filterBounds(geometry)
+      .select("NDVI")
+      .map(function (image){return image.clip(geometry)});*/
+
+// reducir la coleccion a una imagen del NDVI de la quincena
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+//var quincena = dataset2.reduce(ee.Reducer.sum());
+
+// visualizar NDVI de la Quincena
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+// active la capa para visualizarla
+//Map.addLayer(quincena, ndviVisParam, "NDVI Quincena", 0);
+
+// ahora vamos a crear una imagen que contenga la siguientes bandas:
+// media_serie, DSTD_serie, y quincena
+// QUITE EL COMENTARIO DEL CÓDIGO ABAJO 
+// ELIMINE LA BARRA Y ASTERISCO /* y */ al incio y final del bloque y ejecute
+/*var stack_anomalia = ee.Image(media_serie.rename("media_quincena")
+      .addBands(DSTD_serie.rename("DSTD_quincena")
+      .addBands(quincena.rename("quincena"))));*/
+
+// a continuacion vamos a calcular la anomalia NDVI usando la formula
+// QUITE EL COMENTARIO DEL CÓDIGO ABAJO 
+// ELIMINE LA BARRA Y ASTERISCO /* y */ al incio y final del bloque y ejecute
+/*var anomalia_ndvi = stack_anomalia.expression(
+  "(quincena - media) / Desvio", {
+    "media" : stack_anomalia.select("media_quincena"),
+    "quincena": stack_anomalia.select("quincena"),
+    "Desvio" : stack_anomalia.select("DSTD_quincena")
+  }).rename('anom_ndvi');*/
+
+// imprimimos Stack Anomalia y Anomalia NDVI para ver su contenido
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+//print("Stack Anomalia", stack_anomalia);
+//print("Anomalia NDVI", anomalia_ndvi);
+
+// agregamos la imagen claculada de anomalia ndvi
+// QUITE EL COMENTARIO DE LOS CÓDIGOS ABAJO, elimine las barras dobles // y ejecute
+// active la capa para visualizarla
+//Map.addLayer(anomalia_ndvi, ndvianomVisParam, "Anomalía NDVI", 0);
+
+// exportamos la imagen al drive.
+// recuerde crear una carpeta con el nombre DGAA en su Google Drive
+// también recuerde ejecutar la tarea en la pestaña Tasks
+// QUITE EL COMENTARIO DEL CÓDIGO ABAJO 
+// ELIMINE LA BARRA Y ASTERISCO /* y */ al incio y final del bloque y ejecute
+/*Export.image.toDrive({image: anomalia_ndvi, 
+              description: "Anomalia_NDVI_febrero21", 
+              folder: "DGAA", 
+              region:geometry, 
+              scale: 250});*/
